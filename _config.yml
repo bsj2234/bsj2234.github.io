@@ -193,15 +193,15 @@ defaults:
       layout: page
       permalink: /:title/
   - scope:
-      path: "images"
+      path: "medias"
     values:
       image: true
   - scope:
-      path: "images/posts"
+      path: "medias/posts"
     values:
       image: true
   - scope:
-      path: "images/portfolios"
+      path: "medias/portfolios"
     values:
       image: true
 
