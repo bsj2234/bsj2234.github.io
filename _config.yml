@@ -177,6 +177,7 @@ defaults:
       type: posts
     values:
       layout: post
+      image_path: "medias/posts"
       comments: true # Enable comments in posts.
       toc: true # Display TOC column in posts.
       # DO NOT modify the following parameter unless you are confident enough
@@ -193,7 +194,7 @@ defaults:
       layout: page
       permalink: /:title/
   - scope:
-      path: "medias"
+      path: "medias/posts"  # 실제 이미지들이 있는 경로
     values:
       image: true
   - scope:
