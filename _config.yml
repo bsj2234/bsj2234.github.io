@@ -173,6 +173,9 @@ collections:
   tabs:
     output: true
     sort_by: order
+  portfolios:
+    output: true
+    sort_by: order
 
 defaults:
   - scope:
@@ -197,17 +200,20 @@ defaults:
       layout: page
       permalink: /:title/
   - scope:
-      path: "medias/posts"  # 실제 이미지들이 있는 경로
-    values:
-      image: true
-  - scope:
-      path: "medias/posts"
+      path: "medias/posts" # 실제 이미지들이 있는 경로
     values:
       image: true
   - scope:
       path: "medias/portfolios"
     values:
       image: true
+  - scope:
+      path: ""
+      type: portfolios
+    values:
+      layout: portfolio_item
+      permalink: /portfolios/:title/
+      toc: true
 
 sass:
   style: compressed
@@ -239,6 +245,3 @@ jekyll-archives:
   permalinks:
     tag: /tags/:name/
     category: /categories/:name/
-kramdown:
-  auto_ids: true
-  transliterated_header_ids: true
