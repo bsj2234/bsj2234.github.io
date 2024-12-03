@@ -176,6 +176,9 @@ collections:
   portfolios:
     output: true
     sort_by: order
+  gameConcept:
+    output: true
+    sort_by: order
 
 defaults:
   - scope:
@@ -196,6 +199,16 @@ defaults:
   - scope:
       path: ""
       type: tabs # see `site.collections`
+  - scope:
+      path: ""
+      type: gameConcept # see `site.collections`
+  - scope:
+      path: ""
+      type: portfolios # see `site.collections`
+    values:
+      layout: portfolio_item
+      permalink: /portfolios/:title/
+      toc: true
     values:
       layout: page
       permalink: /:title/
@@ -207,13 +220,6 @@ defaults:
       path: "medias/portfolios"
     values:
       image: true
-  - scope:
-      path: ""
-      type: portfolios
-    values:
-      layout: portfolio_item
-      permalink: /portfolios/:title/
-      toc: true
 
 sass:
   style: compressed
