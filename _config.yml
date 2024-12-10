@@ -210,9 +210,6 @@ defaults:
       layout: portfolio_item
       permalink: /portfolios/:title/
       toc: true
-    values:
-      layout: page
-      permalink: /:title/
   - scope:
       path: "medias/posts" # 실제 이미지들이 있는 경로
     values:
