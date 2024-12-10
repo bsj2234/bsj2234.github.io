@@ -220,6 +220,13 @@ defaults:
       path: "medias/portfolios"
     values:
       image: true
+  - scope:
+      path: ""
+      type: portfolios
+    values:
+      layout: portfolio_item
+      permalink: /portfolios/:title/
+      toc: true
 
 sass:
   style: compressed
