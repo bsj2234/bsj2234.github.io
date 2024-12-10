@@ -199,6 +199,10 @@ defaults:
   - scope:
       path: ""
       type: tabs # see `site.collections`
+    values:
+      layout: page
+      permalink: /:title/
+      order: 1
   - scope:
       path: ""
       type: portfolios # see `site.collections`
@@ -248,3 +252,7 @@ jekyll-archives:
   permalinks:
     tag: /tags/:name/
     category: /categories/:name/
+
+kramdown:
+  auto_ids: true
+  transliterated_header_ids: true
