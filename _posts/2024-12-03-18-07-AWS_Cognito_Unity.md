@@ -7,6 +7,8 @@ tags: [AWS, Cognito, Unity]
 media_subpath: /medias/posts
 ---
 
+*한번 만들고 다시 만들어보며 쓰는거지만 검증을 거치지 않아 작동 실패할 수 도 있음 오류 발생 시 덧글을 남겨주세요~*
+
 # AWS Cognito Unity
 [참고 영상](https://www.youtube.com/watch?v=lzQ2rLqlqyk)
  - 구글 로그인을 지원하고 싶었다
@@ -19,6 +21,7 @@ media_subpath: /medias/posts
   - Domain을 내가 구매한 도메인을 쓰려고 하는데 잘 안됐다
   - 일단 그래서 기본 도메인으로 구현중
   - 인증서, 도메인구매, 레코드 설정 등 할게 너무 많음
+  
 ## 구현
   - aws cognito 설정
 
@@ -35,9 +38,11 @@ media_subpath: /medias/posts
  - 로그인 Identifiers는 email
  - Required attributes는 이메일
  - Return url은 callback URL인듯 나중에도 설정 가능
+
 ## App client information -> Edit
  - App client setting 에서 authentication flows 모두 체크해제(Get new user tokens from existing authenticated sessions: ALLOW_REFRESH_TOKEN_AUTH 는 그대로 유지ㅣ)
  - 나머지는 기본 Enable token revocation는 켜져있게 냅둠
+
 ## Sidebar -> Social and external providers
   - Google 추가
     - google console 에서 client id, client secret를 복사해 추가 (이것도 처음하면 뭐 많이 해야한다)
@@ -48,6 +53,7 @@ media_subpath: /medias/posts
     - Map 은 이메일에 이메일 해주면되는듯 sub도 필요하면 추가 영상에서는 sub로 Username 추가
     - Scope 설정 profile email openid 설정(영상에서는 구글 콘솔에서했는데 바뀐듯?)
     - Map email To email, username to sub 으로 설정해봄  (영상과 좀 다름)
+    
 ## Login page -> Edit
   - Callback urls
     - 이건 클라에서 지정되는 callbackurl을 허용해줌(즉 callback url은 클라에서 지정됨)
@@ -57,8 +63,10 @@ media_subpath: /medias/posts
     - 기본 Cognito User Pool
     - Google 추가
     - OpenId Connect scopes 이것도 아마 Email OpenId Profile 로 해야하지 않을까?
+
 ## 람다 함수 설정
   - 아무 함수나 테스트용으로 만듬
+
 ## GatewayAPI 설정
   - Authorizers -> Create new authorizer
     - Cognito User Pool 선택
@@ -66,57 +74,59 @@ media_subpath: /medias/posts
     - DeployAPI -> new stage 생성 -> Deploy
   - REST GET으로 람다 메서드 연결
   - Get -> Authorization -> 위에서 만든 권한 선택
-  - 사실 이거 왜하는지 잘 모르겠음
+  - 실제 인증 걸고 실행할 함수
+
 ## Unity
   - [참고 링크](https://github.com/BatteryAcid/unity-cognito-hostedui-social-client)
   - 여기에는 IOS 딥링크를 사용하는거밖에 없음
   - 그래서 추가 구현
+
 ```csharp
-// 추가된 일부 코드
-//에디터의 경우 웹서버를 위해 추가
-#if UNITY_EDITOR || UNITY_STANDALONE_WIN
-using System.Net;
-#endif
+  // 추가된 일부 코드
+  //에디터의 경우 웹서버를 위해 추가
+  #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+  using System.Net;
+  #endif
 
-public class AuthenticationManager : MonoBehaviour
-{
-   public static string CachePath;
+  public class AuthenticationManager : MonoBehaviour
+  {
+    public static string CachePath;
 
-   // In production, should probably keep these in a config file
-   private const string AppClientID = "****************"; // App client ID, found under App Client Settings
-   //기존 코드는 Prefix와 도메인 주소 둘 다 있음
-   //일단 이것만 사용하는걸로 함
-   private const string AuthCognitoDomainPrefix = "************"; // Found under App Integration -> Domain Name. Changing this means it must be updated in all linked Social providers redirect and javascript origins
+    // In production, should probably keep these in a config file
+    private const string AppClientID = "****************"; // App client ID, found under App Client Settings
+    //기존 코드는 Prefix와 도메인 주소 둘 다 있음
+    //일단 이것만 사용하는걸로 함
+    private const string AuthCognitoDomainPrefix = "************"; // Found under App Integration -> Domain Name. Changing this means it must be updated in all linked Social providers redirect and javascript origins
 
-#if UNITY_EDITOR || UNITY_STANDALONE_WIN
-    // 에디터의 경우 웹서버를 위해 추가
-    // cognito의 allowed redirect urls에 추가된 주소를 넣어야함
-        private const string RedirectUrl = "http://localhost:8080/callback";
-        private HttpListener _httpListener;
-        //콜백 리슨
-        public async void StartLocalServer()
-        {
-            _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://localhost:8080/");
-            _httpListener.Start();
-            
-            while (true)
-            {
-                var context = await _httpListener.GetContextAsync();
-                var code = context.Request.QueryString["code"];
-                if (!string.IsNullOrEmpty(code))
-                {
-                    await ExchangeAuthCodeForAccessToken($"http://localhost:8080/callback?code={code}");
-                    // 브라우저에 성공 메시지 표시
-                    var response = context.Response;
-                    string responseString = "<html><body>인증 성공! 이 창을 닫아도 됩니다.</body></html>";
-                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-                    response.ContentLength64 = buffer.Length;
-                    response.OutputStream.Write(buffer, 0, buffer.Length);
-                    response.OutputStream.Close();
-                }
-            }
-        }
+  #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+      // 에디터의 경우 웹서버를 위해 추가
+      // cognito의 allowed redirect urls에 추가된 주소를 넣어야함
+          private const string RedirectUrl = "http://localhost:8080/callback";
+          private HttpListener _httpListener;
+          //콜백 리슨
+          public async void StartLocalServer()
+          {
+              _httpListener = new HttpListener();
+              _httpListener.Prefixes.Add("http://localhost:8080/");
+              _httpListener.Start();
+              
+              while (true)
+              {
+                  var context = await _httpListener.GetContextAsync();
+                  var code = context.Request.QueryString["code"];
+                  if (!string.IsNullOrEmpty(code))
+                  {
+                      await ExchangeAuthCodeForAccessToken($"http://localhost:8080/callback?code={code}");
+                      // 브라우저에 성공 메시지 표시
+                      var response = context.Response;
+                      string responseString = "<html><body>인증 성공! 이 창을 닫아도 됩니다.</body></html>";
+                      byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                      response.ContentLength64 = buffer.Length;
+                      response.OutputStream.Write(buffer, 0, buffer.Length);
+                      response.OutputStream.Close();
+                  }
+              }
+          }
 
 
 /*
@@ -133,16 +143,264 @@ UnityEngine.AsyncOperation:InvokeCompletionEvent ()
 ## IOS의 경우
   - 딥링크 설정
   - 애플에서 판매자 등록 후 받을 수 있는 딥링크를 ec2에 추가하면 웹페이지를 통해 app 실행 가능
+
 ## 자격증명과 유저풀 차이
  - 자격증명은 임시 권한임 지금은 해당안됨
  - 유저풀은 인증 후 유저정보를 저장
+
 ## url 틀려서 forbidden 오류 발생
  - 웹서버 주소 확인
+
 ## 토큰
  - 토큰을 받아오는데 api 실행시 오류발생
  - idtoken을 사용해서 오류 발생 acesstoken 사용해서 해결
  - 챂에 bareer 붙여야함
  - cors설정등등
+  
+## AWS 람다 인증 방식 공부
+  - 토큰에 데이터를 넣어야 하는가?
+    - 권장되지 않음 인증으로만 사용
+    - 클라에 노출됨 
+    - 민감한 정보는 포함하면 안됨
+    - 데이터 변경 시 새 토큰 필요
+    - JWT 크기 제한이 있음
+    - 사용자 속성을 활용
+
+## 패키지 필요 없어짐.. 검증은 AWS에서 하는걸로 충분
+```javascript
+import { DynamoDB } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+
+const ddb = DynamoDBDocument.from(new DynamoDB({ region: "ap-northeast-2" }));
+
+export const handler = async (event) => {
+    try {
+        // API Gateway의 Aythorizer가 검증한 토큰에서 추출한 정보는
+        // event.requestContext.authorizer.claims에 들어있습니다
+        const userId = event.requestContext.authorizer.claims.sub;
+
+        // 요청 바디 파싱
+        const body = JSON.parse(event.body || '{}');
+        const {  nickname } = body;
+
+        if(!nickname)
+        {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: "Nickname is required"})
+            };
+        }
+        // 플레이어 데이터 생성
+        const playerData = {
+            userId: userId,
+            nickname: nickname,
+            level: 1,
+            exp: 0,
+            gold: 1000,  // 초기 골드
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        // DynamoDB에 저장
+        await ddb.put({
+            TableName: "Players",
+            Item: playerData,
+            // 같은 userId가 이미 있으면 생성 못하도록
+            ConditionExpression: "attribute_not_exists(userId)"
+        });
+        
+        return {
+            statusCode: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization",
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+            },
+            body: JSON.stringify({
+                message: "Player created successfully",
+                player: playerData
+            })
+        };
+        
+    } catch (err) {
+        console.error('Error:', err);
+        
+        if (err.name === 'ConditionalCheckFailedException') {
+            return {
+                statusCode: 409,
+                body: JSON.stringify({ 
+                    message: "Player already exists" 
+                })
+            };
+        }
+
+        return {
+            statusCode: err.name === 'TokenVerificationError' ? 401 : 500,
+            body: JSON.stringify({ 
+                message: "Error creating player",
+                error: err.message 
+            })
+        };
+    }
+};
+```
+
+## AWS ES
+  - CommonJS의 require 대신 import 사용
+  - 패키지 사용시 package.json 파일 필요
+  - 별로도 람다 레이어에 패키지도 필요
+    1. 람다 레이어 생성 후 패키지 추가
+    2. aws-jwt-verify 패키지의 경우
+    ```json
+    // package.json
+      {
+        "type": "module",  // ES 모듈 사용 시 필요
+        "dependencies": {
+          "@aws-sdk/client-cognito-identity-provider": "^3.x.x",
+          "@aws-sdk/client-dynamodb": "^3.x.x",
+          "aws-jwt-verify": "^4.x.x"
+        }
+      }
+    ```
+  - 내 PC에서 패키지 설치 후 레이어에 파일 추가
+    ```powershell
+    cd 패키지 경로
+    npm init -y
+    npm install aws-jwt-verify
+    ```
+    윈도우에서 경로로 이동 후 폴더 구조 변경
+    ```
+      lambda-layer/
+      ├── node_modules/        # 설치된 패키지들
+      └── package.json        # 프로젝트 설정
+    ```
+    3. lambda-layer를 layer.zip으로 압축해 업로드
+       - Lambda 콘솔 -> Layers -> Create layer
+       - ZIP 파일 업로드
+       - Lambda 함수 -> Layers -> Add a layer -> Custom layer -> 위에서 만든 레이어 선택
+       - 주의 nodejs 버전 확인
+
+
+
+## 람다
+  - Deploy -> Test 적극 활용
+  - 람다 함수 코드 내에서 토큰 검증시
+    -  해당 Lambda 함수 -> Configuration -> Function URL ->Auth type None으로 설정(이건 API를 통하지 않고 직접 접근할떄의 검증 방식 검증을 하자)
+  - 람다 함수에서 토큰 데이터 필요 시
+    - 해당 람다 API -> Edit Integration Request -> Lambda Proxy Integration 활성화
+
+## 람다 권한
+  - 람다 함수 -> Configuration -> Execution role -> Edit -> 현재 권한 IAM 역할 페이지 링크 클릭 -> Add Permission (Inline Policy) -> (JSON)
+  ```json
+     {
+         "Version": "2012-10-17",
+         "Statement": [
+             {
+                 "Effect": "Allow",
+                 "Action": [
+                     "dynamodb:PutItem",
+                     "dynamodb:GetItem",
+                     "dynamodb:UpdateItem",
+                     "dynamodb:DeleteItem"
+                 ],
+                 "Resource": "arn:aws:dynamodb:ap-northeast-2:YOUR_ACCOUNT_ID:table/Players"
+             }
+         ]
+     }
+  ```
+
+# API Gateway 
+  - REST API 생성
+  - Authorizer -> Create new authorizer -> 만들어둔 Cognito User Pool 선택, TokenSource는 Authorization
+  - Resoruce 생성(경로 필요시) -> Post 등 메서드 원하는거 선택 -> CORS 켜기(이거 검증 필요 꼭 전부 켜야하나?)
+  - 메서드 생성 -> POST -> Method request settings -> Authorization 아까 만든걸로 설정 Request Validator 잘모름 -> Lambda Func -> Lambda Proxy Integration 활성화(람다 내에서 토큰 사용시) -> RequestHeaders Authorization, Content-Type 추가
+  - 람다 내부에서 검증을 해도 여기서 검증을 하면 람다가 실행되지 않아 효율적, 람다 내부에 검증 로직은 제거해도 될듯
+  - Method Request Edit -> Scope openid, profile, email 추가
+  - Integration Request Edit -> Lambda Proxy Integration 활성화 -> Lambda Function -> 만들어둔 람다 함수 선택
+  - 테스트 후 확인
+  
+## 람다 주소에 직접 접근과 API Gateway 를 통해 접근할때 독립적인 검증 방식을 사용함
+
+
+## Unity Code 수정본 //디버그 몇몇 제거 및 유저 닉네임 구조체로 생성 및 JSON 직렬화 후 전송
+```csharp
+        public async void TestCreateUser()
+        {
+            Debug.Log("=== Starting TestCreateUser ===");
+            string accessToken = GetAccessToken();
+            
+            string url = "https://***********execute-api.ap-northeast-2.amazonaws.com/demo/CreateUser";
+            string _nickname = "test";
+            string jsonData = JsonUtility.ToJson(new CreatePlayerRequest{ nickname = _nickname });
+            
+            using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+            {
+                byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                
+                request.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                request.SetRequestHeader("Content-Type", "application/json");
+                
+                Debug.Log("=== Sending Request ===");
+                Debug.Log($"URL: {url}");
+                Debug.Log($"Nickname: {_nickname}");
+                
+                await request.SendWebRequest();
+                
+                Debug.Log($"=== Response ===");
+                Debug.Log($"Response Code: {request.responseCode}");
+
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError($"Error: {request.error}");
+                    Debug.LogError($"Response: {request.downloadHandler.text}");
+                    var responseHeaders = request.GetResponseHeaders();
+                    if (responseHeaders != null)
+                    {
+                        Debug.LogError("Response Headers:");
+                        foreach (var header in responseHeaders)
+                        {
+                            Debug.LogError($"{header.Key}: {header.Value}");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Log($"Success!");
+                    Debug.Log($"Response: {request.downloadHandler.text}");
+                }
+            }
+        }
+
+         // 요청 데이터 구조체
+        [System.Serializable]
+        public struct CreatePlayerRequest
+        {
+            public string nickname;
+        }
+
+        // 응답 데이터 구조체 ( 필요한 경우 )
+        [System.Serializable]
+        public struct CreatePlayerResponse
+        {
+            public string userId;
+            public string nickname;
+            public int level;
+            public int exp;
+            public int gold;
+            public string createdAt;
+            public string updatedAt;
+        }
+```
+- CreatePlayer is not authorized to perform
+- 이슈 500 오류 발생 데이터 구조 정의 안되어 발생한듯 Nosql이라 구조는 어느정도 상관 없었다
+- 테이블 이름 이슈였는데 아직 500 오류 발생중 -> 권한도 테이블 이름 틀림
+
+- One or more parameter values were invalid: Missing the key timestamp in the item
+- 정렬키에 timestamp를 사용했는데 누락됨 registerat을 timestamp로 변경
+- 성공!
 
 # AI가 정리한 AWS Cognito와 Unity 통합 가이드
 

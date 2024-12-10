@@ -14,7 +14,7 @@ toc: true
 <!-- 유튜브 영상 삽입 -->
 <div class="video-container">
     <iframe 
-        src="https://www.youtube.com/embed/tjLz6Xdfl2Y" 
+        src="https://www.youtube.com/embed/kqVUhN7WtGs" 
         title="보스 전투 시스템 데모" 
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
         allowfullscreen>
