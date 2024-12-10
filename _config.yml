@@ -252,7 +252,3 @@ jekyll-archives:
   permalinks:
     tag: /tags/:name/
     category: /categories/:name/
-
-kramdown:
-  auto_ids: true
-  transliterated_header_ids: true
